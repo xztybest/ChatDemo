@@ -109,5 +109,16 @@ namespace ChatDemo
             }
         }
 
+        //用户添加
+        public static string useraddmysql(string username,string passwd)
+        {
+            return "1";
+        }
+        //用户登录验证
+        public static string userlogincheck(string username,string passwd)
+        {
+            return "1";
+        }
+
     }
 }

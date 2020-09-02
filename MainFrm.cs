@@ -51,7 +51,7 @@ namespace ChatDemo
             while (true)
             {
                 var proxSocket = serverSocket.Accept();
-                this.AppendTextToTxtLog(string.Format("客户端:{0}链接上了", proxSocket.RemoteEndPoint.ToString()));
+                //this.AppendTextToTxtLog(string.Format("客户端:{0}链接上了", proxSocket.RemoteEndPoint.ToString()));
 
                 ClientProxSocketList.Add(proxSocket);
 
@@ -89,7 +89,7 @@ namespace ChatDemo
                 if (len <= 0)
                 {
                     //客户端正常退出
-                    AppendTextToTxtLog(string.Format("客户端:{0}正常退出", proxSocket.RemoteEndPoint.ToString()));
+                    //AppendTextToTxtLog(string.Format("客户端:{0}正常退出", proxSocket.RemoteEndPoint.ToString()));
 
                     ClientProxSocketList.Remove(proxSocket);
 
@@ -121,30 +121,155 @@ namespace ChatDemo
 
                 string dismessage = "来自客户端" + ((IPEndPoint)proxSocket.RemoteEndPoint).Address.ToString() + "的消息：" + plainmessage;
                 AppendTextToTxtLog(dismessage);
-                //MessageBox.Show(plainmessage);
+               // MessageBox.Show(plainmessage+":"+Funid);
 
-                string backmessage1 = "操作成功";
-                string backmessage2 = "操作失败";
-                string passwd = funcsum.AESEnKeyGener();//产生AES加密密钥
-                string message = funcsum.AESEncry("0" + "," + backmessage1 + "," + "1", passwd);//AES加密数据包,返回数据包
-                string signvalue = funcsum.messagesign(backmessage1);//对返回信息进行签名
-                string passwdcipher = funcsum.RSAEncry(passwd);//对AES解密密钥进行RSA加密
-                string sendpackage = message + "," + passwdcipher + "," + signvalue;//组装发送数据包
-                byte[] senddata = Encoding.UTF8.GetBytes(sendpackage);//将数据包转换成为byte类型，方便传输
+                if(Funid =="1")
+                {
+                    string[] usernamemessage = plainmessage.Split(';');
+                    string username = usernamemessage[0];//得到用户名
+                    string usernamepasswd = usernamemessage[1];//得到用户验证密码
+                    //MessageBox.Show(username + ';' + usernamepasswd);
+                    //用户注册进入数据库
+                    string datecode = funcsum.useraddmysql(username, usernamepasswd);
+                    if(datecode=="0")
+                    {
+                        string bkmsg = "注册失败";//返回值信息
+                        string passwd = funcsum.AESEnKeyGener();//产生AES加密密钥
+                        string message = funcsum.AESEncry("1" + "," + bkmsg + "," + "0", passwd);//AES加密数据包,返回数据包
+                        string signvalue = funcsum.messagesign(bkmsg);//对返回信息进行签名
+                        string passwdcipher = funcsum.RSAEncry(passwd);//对AES解密密钥进行RSA加密
+                        string sendpackage = message + "," + passwdcipher + "," + signvalue;//组装发送数据包
+                        byte[] senddata = Encoding.UTF8.GetBytes(sendpackage);//将数据包转换成为byte类型，方便传输
 
-                //向客户端发送返回信息
-                Socket backsocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                int Port = int.Parse("2222");
-                string ipaddress = ((IPEndPoint)proxSocket.RemoteEndPoint).Address.ToString();//获取IP地址
-                backsocket.Connect(ipaddress, Port);
-                backsocket.Send(senddata, 0, senddata.Length, SocketFlags.None);//发送数据包
-                //proxSocket.Send(senddata, 0, senddata.Length, SocketFlags.None);//发送数据包
-                backsocket.Dispose();//释放资源
-                backsocket.Close();//关闭连接
+                        Socket backsocket1 = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                        int Port1 = int.Parse("1111");
+                        string ipaddress1 = ((IPEndPoint)proxSocket.RemoteEndPoint).Address.ToString();//获取IP地址
+                        backsocket1.Connect(ipaddress1, Port1);
+                        backsocket1.Send(senddata, 0, senddata.Length, SocketFlags.None);//发送数据包
+                        //proxSocket.Send(senddata, 0, senddata.Length, SocketFlags.None);//发送数据包
+                        backsocket1.Dispose();//释放资源
+                        backsocket1.Close();//关闭连接
+                        //MessageBox.Show("已经受到注册请求，服务端");
+                    }
+                    if (datecode=="2")
+                    {
+                        string bkmsg = "用户已经存在";//返回值信息
+                        string passwd = funcsum.AESEnKeyGener();//产生AES加密密钥
+                        string message = funcsum.AESEncry("1" + "," + bkmsg + "," + "2", passwd);//AES加密数据包,返回数据包
+                        string signvalue = funcsum.messagesign(bkmsg);//对返回信息进行签名
+                        string passwdcipher = funcsum.RSAEncry(passwd);//对AES解密密钥进行RSA加密
+                        string sendpackage = message + "," + passwdcipher + "," + signvalue;//组装发送数据包
+                        byte[] senddata = Encoding.UTF8.GetBytes(sendpackage);//将数据包转换成为byte类型，方便传输
 
-                AppendTextToTxtLog(string.Format("接受到客户端:{0}的消息是:{1}", proxSocket.RemoteEndPoint.ToString(), plainmessage));
+                        Socket backsocket1 = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                        int Port1 = int.Parse("1111");
+                        string ipaddress1 = ((IPEndPoint)proxSocket.RemoteEndPoint).Address.ToString();//获取IP地址
+                        backsocket1.Connect(ipaddress1, Port1);
+                        backsocket1.Send(senddata, 0, senddata.Length, SocketFlags.None);//发送数据包
+                        //proxSocket.Send(senddata, 0, senddata.Length, SocketFlags.None);//发送数据包
+                        backsocket1.Dispose();//释放资源
+                        backsocket1.Close();//关闭连接
+                        //MessageBox.Show("已经受到注册请求，服务端");
+                    }
+                    else
+                    {
+                        string bkmsg = "注册成功";//返回值信息
+                        string passwd = funcsum.AESEnKeyGener();//产生AES加密密钥
+                        string message = funcsum.AESEncry("1" + "," + bkmsg + "," + "1", passwd);//AES加密数据包,返回数据包
+                        string signvalue = funcsum.messagesign(bkmsg);//对返回信息进行签名
+                        string passwdcipher = funcsum.RSAEncry(passwd);//对AES解密密钥进行RSA加密
+                        string sendpackage = message + "," + passwdcipher + "," + signvalue;//组装发送数据包
+                        byte[] senddata = Encoding.UTF8.GetBytes(sendpackage);//将数据包转换成为byte类型，方便传输
+
+                        Socket backsocket1 = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                        int Port1 = int.Parse("1111");
+                        string ipaddress1 = ((IPEndPoint)proxSocket.RemoteEndPoint).Address.ToString();//获取IP地址
+                        backsocket1.Connect(ipaddress1, Port1);
+                        backsocket1.Send(senddata, 0, senddata.Length, SocketFlags.None);//发送数据包
+                        //proxSocket.Send(senddata, 0, senddata.Length, SocketFlags.None);//发送数据包
+                        backsocket1.Dispose();//释放资源
+                        backsocket1.Close();//关闭连接
+                        //MessageBox.Show("已经受到注册请求，服务端");
+                    }
+                    
+                }
+                if (Funid == "2")
+                {
+                    string[] usernamemessage = plainmessage.Split(';');
+                    string username = usernamemessage[0];//得到用户名
+                    string usernamepasswd = usernamemessage[1];//得到用户验证密码
+                    //用户登录，查询数据库是否存在该用户
+                    //MessageBox.Show(username + ';' + usernamepasswd);
+                    string datacode = funcsum.userlogincheck(username,usernamepasswd);
+                    if(datacode=="1")
+                    {
+                        string bkmsg2 = "登录成功";//返回值信息
+                        string passwd2 = funcsum.AESEnKeyGener();//产生AES加密密钥
+                        string message2 = funcsum.AESEncry("2" + "," + bkmsg2 + "," + "1", passwd2);//AES加密数据包,返回数据包
+                        string signvalue2 = funcsum.messagesign(bkmsg2);//对返回信息进行签名
+                        string passwdcipher2 = funcsum.RSAEncry(passwd2);//对AES解密密钥进行RSA加密
+                        string sendpackage2 = message2 + "," + passwdcipher2 + "," + signvalue2;//组装发送数据包
+                        byte[] senddata2 = Encoding.UTF8.GetBytes(sendpackage2);//将数据包转换成为byte类型，方便传输
+
+                        Socket backsocket2 = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                        int Port2 = int.Parse("3333");
+                        string ipaddress2 = ((IPEndPoint)proxSocket.RemoteEndPoint).Address.ToString();//获取IP地址
+                        backsocket2.Connect(ipaddress2, Port2);
+                        backsocket2.Send(senddata2, 0, senddata2.Length, SocketFlags.None);//发送数据包
+                        //proxSocket.Send(senddata, 0, senddata.Length, SocketFlags.None);//发送数据包
+                        backsocket2.Dispose();//释放资源
+                        backsocket2.Close();//关闭连接
+                        //MessageBox.Show("已经收到登录请求，服务端");
+                    }
+                    if (datacode == "0")
+                    {
+                        string bkmsg2 = "登录失败";//返回值信息
+                        string passwd2 = funcsum.AESEnKeyGener();//产生AES加密密钥
+                        string message2 = funcsum.AESEncry("2" + "," + bkmsg2 + "," + "0", passwd2);//AES加密数据包,返回数据包
+                        string signvalue2 = funcsum.messagesign(bkmsg2);//对返回信息进行签名
+                        string passwdcipher2 = funcsum.RSAEncry(passwd2);//对AES解密密钥进行RSA加密
+                        string sendpackage2 = message2 + "," + passwdcipher2 + "," + signvalue2;//组装发送数据包
+                        byte[] senddata2 = Encoding.UTF8.GetBytes(sendpackage2);//将数据包转换成为byte类型，方便传输
+
+                        Socket backsocket2 = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                        int Port2 = int.Parse("3333");
+                        string ipaddress2 = ((IPEndPoint)proxSocket.RemoteEndPoint).Address.ToString();//获取IP地址
+                        backsocket2.Connect(ipaddress2, Port2);
+                        backsocket2.Send(senddata2, 0, senddata2.Length, SocketFlags.None);//发送数据包
+                        //proxSocket.Send(senddata, 0, senddata.Length, SocketFlags.None);//发送数据包
+                        backsocket2.Dispose();//释放资源
+                        backsocket2.Close();//关闭连接
+                        //MessageBox.Show("已经收到登录请求，服务端");
+                    }
+
+
+                }
+                if(Funid=="0")
+                {
+                    string backmessage1 = txtLog.Text;
+                    string passwd = funcsum.AESEnKeyGener();//产生AES加密密钥
+                    string message = funcsum.AESEncry("0" + "," + backmessage1 + "," + "1", passwd);//AES加密数据包,返回数据包
+                    string signvalue = funcsum.messagesign(backmessage1);//对返回信息进行签名
+                    string passwdcipher = funcsum.RSAEncry(passwd);//对AES解密密钥进行RSA加密
+                    string sendpackage = message + "," + passwdcipher + "," + signvalue;//组装发送数据包
+                    byte[] senddata = Encoding.UTF8.GetBytes(sendpackage);//将数据包转换成为byte类型，方便传输
+
+                    //向客户端发送返回信息
+                    Socket backsocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                    int Port = int.Parse("2222");
+                    string ipaddress = ((IPEndPoint)proxSocket.RemoteEndPoint).Address.ToString();//获取IP地址
+                    backsocket.Connect(ipaddress, Port);
+                    backsocket.Send(senddata, 0, senddata.Length, SocketFlags.None);//发送数据包
+                    //proxSocket.Send(senddata, 0, senddata.Length, SocketFlags.None);//发送数据包
+                    backsocket.Dispose();//释放资源
+                    backsocket.Close();//关闭连接
+
+                    AppendTextToTxtLog(string.Format("来自:{0}的消息是:{1}", proxSocket.RemoteEndPoint.ToString(), plainmessage));
+                }
+
+                
             }
-        }
+            }
 
         private void StopConntect(Socket proxSocket)
         {

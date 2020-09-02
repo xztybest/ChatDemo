@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MySql.Data.MySqlClient;
 
 namespace ChatDemo
 {
     public class funcsum
     {
-      
+        public static string connString = "server=localhost;port=3306;user=root;password=root;database=xxq;";//根据自己的实际数据库进行设置
+        public static MySqlConnection conn = new MySqlConnection(connString);
         //AES加密密钥随机生成时间密码
         public static string AESEnKeyGener()
         {
@@ -110,15 +113,64 @@ namespace ChatDemo
         }
 
         //用户添加
-        public static string useraddmysql(string username,string passwd)
+        public static string useraddmysql(string usernamei, string passwdi)
         {
-            return "1";
+            conn.Open();
+            string checksql = "select * from username where username='" + usernamei+"'";
+            MySqlCommand CMDC = new MySqlCommand(checksql, conn);
+            MySqlDataReader Readata = CMDC.ExecuteReader();
+            if(Readata.Read())
+            {
+                conn.Close();
+                return "2";
+            }
+            else
+            {
+                Readata.Close();
+                //MySqlConnection conn2 = new MySqlConnection(connString);
+                string sqluseradd = "insert into username(username,userpasswd) values('" + usernamei + "'," + "'" + passwdi + "' );";
+                MySqlCommand CMD1 = new MySqlCommand(sqluseradd, conn);
+                int back = CMD1.ExecuteNonQuery();
+                if (back > 0)
+                {
+                    conn.Close();
+                    return "1";
+                }
+                else
+                {
+                    conn.Close();
+                    return "0";
+                }
+
+            }
+            
         }
         //用户登录验证
         public static string userlogincheck(string username,string passwd)
         {
-            return "1";
+            conn.Open();
+            string checksql = "select * from username where username='" + username + "' and userpasswd='" + passwd + "'";
+            MySqlCommand CMDC = new MySqlCommand(checksql, conn);
+            MySqlDataReader Readata = CMDC.ExecuteReader();
+            if (Readata.Read())
+            {
+                conn.Close();
+                return "1";
+            }
+            else
+            {
+                conn.Close();
+                return "0";
+            }
+
+            
         }
 
+        //向客户端发送信息
+        public static string sendmessagetoclient(string message)
+        {
+
+            return "1";
+        }
     }
 }
